@@ -7,6 +7,8 @@ use strict;
 use HTTP::Cookies;
 use XMLRPC::Lite;
 
+use parent qw(SMS::Send::Driver);
+
 =head1 NAME
 
 SMS::Send::DE::Sipgate - An SMS::Send driver for the sipgate.de service.
@@ -98,7 +100,7 @@ sub new {
     my $self = \%params;
     bless $self, $class;
     
-    $self->{_url} = 'https://'.$self->username().':'.$self->password().'@samurai.sipgate.net/RPC2';
+    $self->{_url} = 'https://'.$self->{_login}.':'.$self->{_password}.'@samurai.sipgate.net/RPC2';
     $self->{_cookies} = HTTP::Cookies::->new( ignore_discard => 1, );
     return $self;
 }
@@ -122,8 +124,8 @@ sub client {
 sub _init_client {
     my $self = shift;
 
-    my $Client = XMLRPC::Lite::->proxy( $self->url() );
-    $Client->transport()->cookie_jar( $self->cookies() );
+    my $Client = XMLRPC::Lite::->proxy( $self->{_url} );
+    $Client->transport()->cookie_jar( $self->{_cookies} );
     if ( $Client->transport()->can('ssl_opts') ) {
         $Client->transport()->ssl_opts( verify_hostname => 0, );
     }
