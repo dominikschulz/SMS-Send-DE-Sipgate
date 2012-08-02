@@ -11,3 +11,4 @@ cover_db
 pod2htm*.tmp
 SMS-Send-DE-Sipgate-*
 Debian_CPANTS.txt
+.build/
