@@ -25,13 +25,13 @@ SMS::Send::DE::Sipgate - An SMS::Send driver for the sipgate.de service.
         text    => 'You message may use up to 160 chars',
         to'     => '0555 4444', # only german numbers allowed for this driver
     );
-    
+
     if ( $sent ) {
         print "Sent message\n";
     } else {
         print "Failed to send test message\n";
     }
-    
+
 =head1 DESCRIPTION
 
 L<SMS::Send::DE::Sipgate> is an regional L<SMS::Send> driver for
@@ -90,7 +90,7 @@ sub new {
         or $params{_verbose} = 1;
     my $self = \%params;
     bless $self, $class;
-    
+
     $self->{_url} = 'https://'.$self->{_login}.':'.$self->{_password}.'@samurai.sipgate.net/RPC2';
     $self->{_cookies} = HTTP::Cookies::->new( ignore_discard => 1, );
     return $self;
@@ -104,11 +104,11 @@ Lazy initialization of the XMLRPC client.
 
 sub client {
     my $self = shift;
-    
+
     if(!$self->{_client}) {
         $self->{_client} = $self->_init_client();
     }
-    
+
     return $self->{_client};
 }
 
@@ -120,7 +120,7 @@ sub _init_client {
     if ( $Client->transport()->can('ssl_opts') ) {
         $Client->transport()->ssl_opts( verify_hostname => 0, );
     }
-    
+
     my $resp = $Client->call(
         'samurai.ClientIdenfity',
         {
@@ -142,17 +142,17 @@ List all known response codes with their explaination.
 
 sub responses {
     my $self = shift;
-    
+
     if(!$self->{_responses}) {
         $self->{_responses} = $self->_init_responses();
     }
-    
+
     return $self->{_responses};
 }
 
 sub _init_responses {
     my $self = shift;
-    
+
     # see http://www.sipgate.de/beta/public/static/downloads/basic/api/sipgate_api_documentation.pdf, page 30ff.
     my $resp_ref = {
         '200'   => 'Method success',
@@ -201,7 +201,7 @@ sub _init_responses {
     for my $i (900 .. 999) {
         $resp_ref->{$i} = 'Vendor defined status code';
     }
-    
+
     return $resp_ref;
 }
 
@@ -214,10 +214,10 @@ Send an SMS. See L<SMS::Send> for the details.
 sub send_sms {
     my $self = shift;
     my %params = @_;
-    
+
     my $destination = $self->_clean_number($params{'to'});
     my $message = substr($params{'text'},0,159);
-    
+
     my $resp = $self->client()->call(
         'samurai.SessionInitiate',
         {
@@ -227,7 +227,7 @@ sub send_sms {
         }
     );
     my $result = $resp->result();
-    
+
     if($result && $result->{'StatusCode'} == 200) {
         print 'Sent '.$message.' to '.$destination."\n" if $self->{_verbose};
         return 1;
@@ -245,14 +245,14 @@ sub send_sms {
 sub _clean_number {
     my $self = shift;
     my $number = shift;
-    
+
     # strip all non-number chars
     $number =~ s/\D//g;
     # make sure to use the country prefix for germany
     $number =~ s/^01/491/;
     # never prefix country with 00
     $number =~ s/^00491/491/;
-    
+
     return $number;
 }
 
